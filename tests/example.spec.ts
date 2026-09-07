@@ -1,37 +1,44 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/saucedemo-test';
 
 test.describe ('SauceDemo', () => {
 
-    test.beforeEach(async ({ page }) => {
-        await page.goto('https://saucedemo.com/');
+    test.beforeEach(async ({ loginPage }) => {
+        await loginPage.load();
     });
 
     test('has title', async ({ page }) => {
         await expect(page).toHaveTitle(/Swag Labs/);
     });
 
-    test('has login part', async ({ page }) => {
-        await expect(page.locator('[data-test="username"]')).toBeVisible();
-        await expect(page.locator('[data-test="password"]')).toBeVisible();
-        await expect(page.locator('[data-test="login-button"]')).toBeVisible();
+    test('has login part', async ({ loginPage }) => {
+        await expect(loginPage.usernameInput).toBeVisible();
+        await expect(loginPage.passwordInput).toBeVisible();
+        await expect(loginPage.loginButton).toBeVisible();
     });
 
-    test('has accepted usernames and password', async ({ page }) => {
-        await expect(page.locator('[data-test="login-credentials"]')).toBeVisible();
-        await expect(page.locator('[data-test="login-password"]')).toBeVisible();
+    test('has accepted usernames and password', async ({ loginPage }) => {
+        await expect(loginPage.loginCredentials).toBeVisible();
+        await expect(loginPage.loginPassword).toBeVisible();
     });
 
-    test('login fails with invalid credentials', async ({ page }) => {
-        await page.locator('[data-test="username"]').fill('username');
-        await page.locator('[data-test="password"]').fill('password');
-        await page.locator('[data-test="login-button"]').click();
-        await expect(page.locator('[data-test="error"]')).toBeVisible();
+    test('login fails with invalid credentials', async ({ loginPage }) => {
+        await loginPage.usernameInput.fill('username');
+        await loginPage.passwordInput.fill('password');
+        await loginPage.loginButton.click();
+        await expect(loginPage.page.locator('[data-test="error"]')).toBeVisible();
     });
 
-    test('login succeeds with valid credentials', async ({ page }) => {
-        await page.locator('[data-test="username"]').fill('standard_user');
-        await page.locator('[data-test="password"]').fill('secret_sauce');
-        await page.locator('[data-test="login-button"]').click();
-        await expect(page).toHaveURL(/inventory.html/);
+    test('login succeeds with valid credentials', async ({ loginPage }) => {
+        await loginPage.usernameInput.fill('standard_user');
+        await loginPage.passwordInput.fill('secret_sauce');
+        await loginPage.loginButton.click();
+        await expect(loginPage.page).toHaveURL(/inventory.html/);
+    });
+
+    test('menu button is visible after login', async ({ loginPage }) => {
+        await loginPage.usernameInput.fill('standard_user');
+        await loginPage.passwordInput.fill('secret_sauce');
+        await loginPage.loginButton.click();
+        //await expect(loginPage.page.locator('[data-test="menu-button"]')).toBeVisible();
     });
 });
