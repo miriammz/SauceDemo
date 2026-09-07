@@ -1,13 +1,13 @@
 import { test as base } from '@playwright/test';
-import { LoginPage } from '../pages/login';
+import { LoginAndMenuPage } from '../pages/login';
 
 type SauceDemoFixtures = {
-    loginPage: LoginPage;
+    loginAndMenuPage: LoginAndMenuPage;
 }
 
 export const test = base.extend<SauceDemoFixtures>({
-    loginPage: async ({ page }, use) => {
-        await use(new LoginPage(page));
+    loginAndMenuPage: async ({ page }, use) => {
+        await use(new LoginAndMenuPage(page));
     }
 });
 
