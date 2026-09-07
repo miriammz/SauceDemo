@@ -35,10 +35,11 @@ test.describe ('SauceDemo', () => {
         await expect(loginPage.page).toHaveURL(/inventory.html/);
     });
 
-    test('menu button is visible after login', async ({ loginPage }) => {
+    test('menu button and shopping icon are visible after login', async ({ loginPage }) => {
         await loginPage.usernameInput.fill('standard_user');
         await loginPage.passwordInput.fill('secret_sauce');
         await loginPage.loginButton.click();
-        //await expect(loginPage.page.locator('[data-test="menu-button"]')).toBeVisible();
+        await expect(loginPage.page.getByRole('button', { name: 'Open Menu' })).toBeVisible();
+        await expect(loginPage.page.locator('[data-test="shopping-cart-link"]')).toBeVisible();
     });
 });
