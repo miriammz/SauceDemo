@@ -85,6 +85,7 @@ test.describe ('SauceDemo', () => {
     test('menu button opens menu and has all options', async ({ loginAndMenuPage }) => {
         await loginAndMenuPage.login('standard_user', 'secret_sauce');
         await loginAndMenuPage.menu.click();
+        await expect(loginAndMenuPage.page.getByRole('button', { name: 'Close Menu' })).toBeVisible();
         await expect(loginAndMenuPage.inventory).toBeVisible();
         await expect(loginAndMenuPage.about).toBeVisible();
         await expect(loginAndMenuPage.logout).toBeVisible();
@@ -103,15 +104,21 @@ test.describe ('SauceDemo', () => {
         await loginAndMenuPage.menu.click();
         await loginAndMenuPage.logout.click();
         await expect(loginAndMenuPage.page).toHaveURL(/saucedemo.com/);
+        await expect(loginAndMenuPage.usernameInput).toBeVisible();
+        await expect(loginAndMenuPage.loginButton).toBeVisible();
     });
 
     test('reset link works', async ({ loginAndMenuPage }) => {
         await loginAndMenuPage.login('standard_user', 'secret_sauce');
+        await expect(loginAndMenuPage.page.locator('[data-test="add-to-cart-sauce-labs-backpack"]')).toHaveText('Add to cart');
         await loginAndMenuPage.page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
-        await expect(loginAndMenuPage.page.locator('[data-test="shopping-cart-badge"]')).toBeVisible();
+        await expect(loginAndMenuPage.page.locator('[data-test="add-to-cart-sauce-labs-backpack"]')).toHaveText('Remove');
+        await expect(loginAndMenuPage.page.locator('[data-test="shopping-cart-badge"]')).toHaveText('1');
         await loginAndMenuPage.menu.click();
         await loginAndMenuPage.reset.click();
         //comprobar que se quita el 1 del carrito
         await expect(loginAndMenuPage.page.locator('[data-test="shopping-cart-badge"]')).not.toBeVisible();
+        //comprobar que vuelve a poner Add to cart en el boton del producto
+        await expect(loginAndMenuPage.page.locator('[data-test="add-to-cart-sauce-labs-backpack"]')).toHaveText('Add to cart');
     });
 });
