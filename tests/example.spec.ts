@@ -76,11 +76,13 @@ test.describe ('SauceDemo', () => {
         await expect(menuPage.page.locator('[data-test="title"]')).toHaveText('Products');
     });
 
-    test('menu button and shopping icon are visible after login', async ({ loginPage, menuPage, cartPage }) => {
+    test('menu button, shopping icon, inventory part and filter are visible after login', async ({ loginPage, menuPage, cartPage, inventoryPage }) => {
         await loginPage.login('standard_user', 'secret_sauce');
         await expect(menuPage.page.getByRole('button', { name: 'Open Menu' })).toBeVisible();
         await expect(cartPage.cartLink).toBeVisible();
-    });
+        await expect(inventoryPage.page.locator('[data-test="inventory-container"]')).toBeVisible();
+        await expect(inventoryPage.sort).toBeVisible();
+});
 
     test('menu button opens menu and has all options', async ({ loginPage, menuPage }) => {
         await loginPage.login('standard_user', 'secret_sauce');
@@ -90,6 +92,15 @@ test.describe ('SauceDemo', () => {
         await expect(menuPage.about).toBeVisible();
         await expect(menuPage.logout).toBeVisible();
         await expect(menuPage.reset).toBeVisible();
+    });
+
+    test('inventory link works', async ({ loginPage, menuPage, inventoryPage, cartPage }) => {
+        await loginPage.login('standard_user', 'secret_sauce');
+        await cartPage.cartLink.click();
+        await expect(cartPage.page).toHaveURL(/cart.html/);
+        await menuPage.menu.click();
+        await menuPage.inventory.click();
+        await expect(inventoryPage.page).toHaveURL(/inventory.html/);
     });
 
     test('about link works', async ({ loginPage, menuPage }) => {
@@ -121,5 +132,13 @@ test.describe ('SauceDemo', () => {
         //comprobar que el estado reseteado persiste tras recargar
         await inventoryPage.page.reload();
         await expect(inventoryPage.backpackAddButton).toHaveText('Add to cart');
+    });
+
+    test('cart icon works', async ({ loginPage, cartPage, menuPage }) => {
+        await loginPage.login('standard_user', 'secret_sauce');
+        await expect(cartPage.cartBadge).not.toBeVisible();
+        await cartPage.cartLink.click();
+        await expect(cartPage.page).toHaveURL(/cart.html/);
+        await expect(menuPage.page.locator('[data-test="title"]')).toHaveText('Your Cart');
     });
 });
