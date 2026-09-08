@@ -82,6 +82,7 @@ test.describe ('SauceDemo', () => {
         await expect(cartPage.cartLink).toBeVisible();
         await expect(inventoryPage.page.locator('[data-test="inventory-container"]')).toBeVisible();
         await expect(inventoryPage.sort).toBeVisible();
+        await expect(inventoryPage.page.locator('[data-test="active-option"]')).toHaveText('Name (A to Z)');
 });
 
     test('menu button opens menu and has all options', async ({ loginPage, menuPage }) => {
@@ -140,5 +141,38 @@ test.describe ('SauceDemo', () => {
         await cartPage.cartLink.click();
         await expect(cartPage.page).toHaveURL(/cart.html/);
         await expect(menuPage.page.locator('[data-test="title"]')).toHaveText('Your Cart');
+    });
+
+    test('products shown by default are sorted by name A to Z', async ({ loginPage, inventoryPage }) => {
+        await loginPage.login('standard_user', 'secret_sauce');
+        const productNames = await inventoryPage.page.locator('.inventory_item_name').allTextContents();
+        const sortedProductNames = [...productNames].sort();
+        expect(productNames).toEqual(sortedProductNames);
+    });
+
+    test('products sorted by name Z to A', async ({ loginPage, inventoryPage }) => {
+        await loginPage.login('standard_user', 'secret_sauce');
+        await inventoryPage.sort.selectOption('za');
+        const productNames = await inventoryPage.page.locator('.inventory_item_name').allTextContents();
+        const sortedProductNames = [...productNames].sort().reverse();
+        expect(productNames).toEqual(sortedProductNames);
+    });
+
+    test('products sorted by price low to high', async ({ loginPage, inventoryPage }) => {
+        await loginPage.login('standard_user', 'secret_sauce');
+        await inventoryPage.sort.selectOption('lohi');
+        const productPrices = await inventoryPage.page.locator('.inventory_item_price').allTextContents();
+        const productPricesNumbers = productPrices.map(price => parseFloat(price.replace('$', '')));
+        const sortedProductPricesNumbers = [...productPricesNumbers].sort((a, b) => a - b);
+        expect(productPricesNumbers).toEqual(sortedProductPricesNumbers);
+    });
+
+    test('products sorted by price high to low', async ({ loginPage, inventoryPage }) => {
+        await loginPage.login('standard_user', 'secret_sauce');
+        await inventoryPage.sort.selectOption('hilo');
+        const productPrices = await inventoryPage.page.locator('.inventory_item_price').allTextContents();
+        const productPricesNumbers = productPrices.map(price => parseFloat(price.replace('$', '')));
+        const sortedProductPricesNumbers = [...productPricesNumbers].sort((a, b) => b - a);
+        expect(productPricesNumbers).toEqual(sortedProductPricesNumbers);
     });
 });
