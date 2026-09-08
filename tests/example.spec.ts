@@ -79,7 +79,7 @@ test.describe ('SauceDemo', () => {
     test('menu button and shopping icon are visible after login', async ({ loginPage, menuPage, cartPage }) => {
         await loginPage.login('standard_user', 'secret_sauce');
         await expect(menuPage.page.getByRole('button', { name: 'Open Menu' })).toBeVisible();
-        await expect(cartPage.cart).toBeVisible();
+        await expect(cartPage.cartLink).toBeVisible();
     });
 
     test('menu button opens menu and has all options', async ({ loginPage, menuPage }) => {
@@ -110,15 +110,16 @@ test.describe ('SauceDemo', () => {
 
     test('reset link works', async ({ loginPage, menuPage, cartPage, inventoryPage }) => {
         await loginPage.login('standard_user', 'secret_sauce');
-        await expect(inventoryPage.backpack).toHaveText('Add to cart');
-        await inventoryPage.backpack.click();
-        await expect(inventoryPage.backpack).toHaveText('Remove');
-        await expect(cartPage.cart).toHaveText('1');
+        await expect(inventoryPage.backpackAddButton).toHaveText('Add to cart');
+        await inventoryPage.backpackAddButton.click();
+        await expect(inventoryPage.backpackRemoveButton).toHaveText('Remove');
+        await expect(cartPage.cartBadge).toHaveText('1');
         await menuPage.menu.click();
         await menuPage.reset.click();
         //comprobar que se quita el 1 del carrito
-        await expect(cartPage.cart).not.toBeVisible();
-        //comprobar que vuelve a poner Add to cart en el boton del producto
-        await expect(inventoryPage.backpack).toHaveText('Add to cart');
+        await expect(cartPage.cartBadge).not.toBeVisible();
+        //comprobar que el estado reseteado persiste tras recargar
+        await inventoryPage.page.reload();
+        await expect(inventoryPage.backpackAddButton).toHaveText('Add to cart');
     });
 });
