@@ -63,11 +63,10 @@ test.describe ('SauceDemo', () => {
     test('reset link works', async ({ loginAndMenuPage }) => {
         await loginAndMenuPage.login('standard_user', 'secret_sauce');
         await loginAndMenuPage.page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
-        await loginAndMenuPage.page.locator('[data-test="shopping-cart-link"]').click();
-        await expect(loginAndMenuPage.page.locator('[data-test="inventory-item"]')).toBeVisible();
+        await expect(loginAndMenuPage.page.locator('[data-test="shopping-cart-badge"]')).toBeVisible();
         await loginAndMenuPage.menu.click();
         await loginAndMenuPage.reset.click();
         //comprobar que se quita el 1 del carrito
-        await expect(loginAndMenuPage.page.locator('[data-test="inventory-item"]')).not.toBeVisible();
+        await expect(loginAndMenuPage.page.locator('[data-test="shopping-cart-badge"]')).not.toBeVisible();
     });
 });
