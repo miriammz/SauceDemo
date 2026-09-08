@@ -76,10 +76,10 @@ test.describe ('SauceDemo', () => {
         await expect(menuPage.page.locator('[data-test="title"]')).toHaveText('Products');
     });
 
-    test('menu button and shopping icon are visible after login', async ({ loginPage, menuPage }) => {
+    test('menu button and shopping icon are visible after login', async ({ loginPage, menuPage, cartPage }) => {
         await loginPage.login('standard_user', 'secret_sauce');
         await expect(menuPage.page.getByRole('button', { name: 'Open Menu' })).toBeVisible();
-        await expect(menuPage.page.locator('[data-test="shopping-cart-link"]')).toBeVisible();
+        await expect(cartPage.cart).toBeVisible();
     });
 
     test('menu button opens menu and has all options', async ({ loginPage, menuPage }) => {
@@ -108,17 +108,17 @@ test.describe ('SauceDemo', () => {
         await expect(loginPage.loginButton).toBeVisible();
     });
 
-    test('reset link works', async ({ loginPage, menuPage }) => {
+    test('reset link works', async ({ loginPage, menuPage, cartPage, inventoryPage }) => {
         await loginPage.login('standard_user', 'secret_sauce');
-        await expect(menuPage.page.locator('[data-test="add-to-cart-sauce-labs-backpack"]')).toHaveText('Add to cart');
-        await menuPage.page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
-        await expect(menuPage.page.locator('[data-test="add-to-cart-sauce-labs-backpack"]')).toHaveText('Remove');
-        await expect(menuPage.page.locator('[data-test="shopping-cart-badge"]')).toHaveText('1');
+        await expect(inventoryPage.backpack).toHaveText('Add to cart');
+        await inventoryPage.backpack.click();
+        await expect(inventoryPage.backpack).toHaveText('Remove');
+        await expect(cartPage.cart).toHaveText('1');
         await menuPage.menu.click();
         await menuPage.reset.click();
         //comprobar que se quita el 1 del carrito
-        await expect(menuPage.page.locator('[data-test="shopping-cart-badge"]')).not.toBeVisible();
+        await expect(cartPage.cart).not.toBeVisible();
         //comprobar que vuelve a poner Add to cart en el boton del producto
-        await expect(menuPage.page.locator('[data-test="add-to-cart-sauce-labs-backpack"]')).toHaveText('Add to cart');
+        await expect(inventoryPage.backpack).toHaveText('Add to cart');
     });
 });
