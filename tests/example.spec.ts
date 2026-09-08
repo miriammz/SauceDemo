@@ -16,19 +16,64 @@ test.describe ('SauceDemo', () => {
         await expect(loginAndMenuPage.loginButton).toBeVisible();
     });
 
-    test('has accepted usernames and password', async ({ loginAndMenuPage }) => {
+    test('displays accepted credentials', async ({ loginAndMenuPage }) => {
         await expect(loginAndMenuPage.loginCredentials).toBeVisible();
         await expect(loginAndMenuPage.loginPassword).toBeVisible();
+        await expect(loginAndMenuPage.page.getByRole('heading', { name: 'Accepted usernames are:' })).toBeVisible();
+        await expect(loginAndMenuPage.page.getByRole('heading', { name: 'Password for all users:' })).toBeVisible();
+        const acceptedUsernames = [
+            'standard_user',
+            'locked_out_user',
+            'problem_user',
+            'performance_glitch_user',
+            'error_user',
+            'visual_user',
+        ];
+        for (const username of acceptedUsernames) {
+            await expect(loginAndMenuPage.loginCredentials).toContainText(username);
+        }
+        await expect(loginAndMenuPage.loginPassword).toContainText('secret_sauce');
     });
 
     test('login fails with invalid credentials', async ({ loginAndMenuPage }) => {
         await loginAndMenuPage.login('username', 'password');
-        await expect(loginAndMenuPage.page.locator('[data-test="error"]')).toBeVisible();
+        await expect(loginAndMenuPage.error).toBeVisible();
+        await expect(loginAndMenuPage.error).toContainText('Epic sadface: Username and password do not match any user in this service');
+        await expect(loginAndMenuPage.page).toHaveURL(/saucedemo.com/);
+    });
+
+    test('login fails with empty credentials', async ({ loginAndMenuPage }) => {
+        await loginAndMenuPage.login('', '');
+        await expect(loginAndMenuPage.error).toBeVisible();
+        await expect(loginAndMenuPage.error).toContainText('Epic sadface: Username is required');
+        await expect(loginAndMenuPage.page).toHaveURL(/saucedemo.com/);
+    });
+
+    test('login fails with user empty and password filled', async ({ loginAndMenuPage }) => {
+        await loginAndMenuPage.login('', 'secret_sauce');
+        await expect(loginAndMenuPage.error).toBeVisible();
+        await expect(loginAndMenuPage.error).toContainText('Epic sadface: Username is required');
+        await expect(loginAndMenuPage.page).toHaveURL(/saucedemo.com/);
+    });
+
+    test('login fails with password empty and user filled', async ({ loginAndMenuPage }) => {
+        await loginAndMenuPage.login('standard_user', '');
+        await expect(loginAndMenuPage.error).toBeVisible();
+        await expect(loginAndMenuPage.error).toContainText('Epic sadface: Password is required');
+        await expect(loginAndMenuPage.page).toHaveURL(/saucedemo.com/);
+    });
+
+    test('login fails with locked user', async ({ loginAndMenuPage }) => {
+        await loginAndMenuPage.login('locked_out_user', 'secret_sauce');
+        await expect(loginAndMenuPage.error).toBeVisible();
+        await expect(loginAndMenuPage.error).toContainText('Epic sadface: Sorry, this user has been locked out.');
+        await expect(loginAndMenuPage.page).toHaveURL(/saucedemo.com/);
     });
 
     test('login succeeds with valid credentials', async ({ loginAndMenuPage }) => {
         await loginAndMenuPage.login('standard_user', 'secret_sauce');
         await expect(loginAndMenuPage.page).toHaveURL(/inventory.html/);
+        await expect(loginAndMenuPage.page.locator('[data-test="title"]')).toHaveText('Products');
     });
 
     test('menu button and shopping icon are visible after login', async ({ loginAndMenuPage }) => {

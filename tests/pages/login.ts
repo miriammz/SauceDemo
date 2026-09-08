@@ -12,6 +12,7 @@ export class LoginAndMenuPage {
     readonly about: Locator;
     readonly logout: Locator;
     readonly reset: Locator;
+    readonly error: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -25,6 +26,7 @@ export class LoginAndMenuPage {
         this.about = page.locator('[data-test="about-sidebar-link"]');
         this.logout = page.locator('[data-test="logout-sidebar-link"]');
         this.reset = page.locator('[data-test="reset-sidebar-link"]');
+        this.error = page.locator('[data-test="error"]');
     }
 
     async load() {
