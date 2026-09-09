@@ -2,6 +2,7 @@ import { test, expect } from './fixtures/saucedemo-test';
 import { LoginPage } from './pages/login';
 import { InventoryPage } from './pages/inventory';
 import { CartPage } from './pages/cart';
+import { CheckoutPage } from './pages/checkout';
 
 async function loginAndAddItemsToCart({loginPage, inventoryPage, cartPage}: 
     {loginPage: LoginPage, inventoryPage: InventoryPage, cartPage: CartPage}) {
@@ -14,22 +15,22 @@ async function loginAndAddItemsToCart({loginPage, inventoryPage, cartPage}:
     await expect(cartPage.cartItems).toHaveCount(1);
 }
 
-async function goToCheckoutStepOne({cartPage}: {cartPage: CartPage}) {
-    await cartPage.page.locator('[data-test="checkout"]').click();
-    await expect(cartPage.page).toHaveURL(/checkout-step-one.html/);
-    await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Your Information');
+async function goToCheckoutStepOne({checkoutPage}: {checkoutPage: CheckoutPage}) {
+    await checkoutPage.checkoutButton.click();
+    await expect(checkoutPage.page).toHaveURL(/checkout-step-one.html/);
+    await expect(checkoutPage.title).toHaveText('Checkout: Your Information');
 }
 
-async function goToCheckoutStepTwo({cartPage}: {cartPage: CartPage}) {
-    await cartPage.page.locator('[data-test="continue"]').click();
-    await expect(cartPage.page).toHaveURL(/checkout-step-two.html/);
-    await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Overview');
+async function goToCheckoutStepTwo({checkoutPage}: {checkoutPage: CheckoutPage}) {
+    await checkoutPage.continueButton.click();
+    await expect(checkoutPage.page).toHaveURL(/checkout-step-two.html/);
+    await expect(checkoutPage.title).toHaveText('Checkout: Overview');
 }
 
-async function goToCheckoutComplete({cartPage}: {cartPage: CartPage}) {
-    await cartPage.page.locator('[data-test="finish"]').click();
-    await expect(cartPage.page).toHaveURL(/checkout-complete.html/);
-    await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Complete!');
+async function goToCheckoutComplete({checkoutPage}: {checkoutPage: CheckoutPage}) {
+    await checkoutPage.finishButton.click();
+    await expect(checkoutPage.page).toHaveURL(/checkout-complete.html/);
+    await expect(checkoutPage.title).toHaveText('Checkout: Complete!');
 }
 
 test.describe ('SauceDemo', () => {
@@ -110,17 +111,17 @@ test.describe ('SauceDemo', () => {
 
     test('menu button, shopping icon, inventory part and filter are visible after login', async ({ loginPage, menuPage, cartPage, inventoryPage }) => {
         await loginPage.login('standard_user', 'secret_sauce');
-        await expect(menuPage.page.getByRole('button', { name: 'Open Menu' })).toBeVisible();
+        await expect(menuPage.menu).toBeVisible();
         await expect(cartPage.cartLink).toBeVisible();
-        await expect(inventoryPage.page.locator('[data-test="inventory-container"]')).toBeVisible();
+        await expect(inventoryPage.container).toBeVisible();
         await expect(inventoryPage.sort).toBeVisible();
-        await expect(inventoryPage.page.locator('[data-test="active-option"]')).toHaveText('Name (A to Z)');
+        await expect(inventoryPage.activeOption).toHaveText('Name (A to Z)');
     });
 
     test('menu button opens menu and has all options', async ({ loginPage, menuPage }) => {
         await loginPage.login('standard_user', 'secret_sauce');
         await menuPage.menu.click();
-        await expect(menuPage.page.getByRole('button', { name: 'Close Menu' })).toBeVisible();
+        await expect(menuPage.menu).toBeVisible();
         await expect(menuPage.inventory).toBeVisible();
         await expect(menuPage.about).toBeVisible();
         await expect(menuPage.logout).toBeVisible();
@@ -167,12 +168,12 @@ test.describe ('SauceDemo', () => {
         await expect(inventoryPage.backpackAddButton).toHaveText('Add to cart');
     });
 
-    test('cart icon works', async ({ loginPage, cartPage, menuPage }) => {
+    test('cart icon works', async ({ loginPage, cartPage }) => {
         await loginPage.login('standard_user', 'secret_sauce');
         await expect(cartPage.cartBadge).not.toBeVisible();
         await cartPage.cartLink.click();
         await expect(cartPage.page).toHaveURL(/cart.html/);
-        await expect(menuPage.page.locator('[data-test="title"]')).toHaveText('Your Cart');
+        await expect(cartPage.title).toHaveText('Your Cart');
     });
 
     test('each product has a name, description, price, image and add to cart button', async ({ loginPage, inventoryPage }) => {
@@ -276,70 +277,70 @@ test.describe ('SauceDemo', () => {
 
     test('continue shopping button works', async ({ loginPage, inventoryPage, cartPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await cartPage.page.locator('[data-test="continue-shopping"]').click();
+        await cartPage.continueButton.click();
         await expect(inventoryPage.page).toHaveURL(/inventory.html/);
         await expect(inventoryPage.backpackRemoveButton).toHaveText('Remove');
     });
 
-    test('checkout flow works', async ({ loginPage, inventoryPage, cartPage }) => {
+    test('checkout flow works', async ({ loginPage, inventoryPage, cartPage, checkoutPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await goToCheckoutStepOne({cartPage});
-        await cartPage.form('John', 'Doe', '12345');
-        await goToCheckoutStepTwo({cartPage});
-        await goToCheckoutComplete({cartPage});
+        await goToCheckoutStepOne({checkoutPage});
+        await checkoutPage.form('John', 'Doe', '12345');
+        await goToCheckoutStepTwo({checkoutPage});
+        await goToCheckoutComplete({checkoutPage});
     });
 
-    test('checkout flow fails with missing info', async ({ loginPage, inventoryPage, cartPage }) => {
+    test('checkout flow fails with missing info', async ({ loginPage, inventoryPage, cartPage, checkoutPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await goToCheckoutStepOne({cartPage});
-        await cartPage.form('', '', '');
-        await cartPage.expectError('Error: First Name is required');
-        await cartPage.form('John', '', '');
-        await cartPage.expectError('Error: Last Name is required');
-        await cartPage.form('John', 'Doe', '');
-        await cartPage.expectError('Error: Postal Code is required');
+        await goToCheckoutStepOne({checkoutPage});
+        await checkoutPage.form('', '', '');
+        await checkoutPage.expectError('Error: First Name is required');
+        await checkoutPage.form('John', '', '');
+        await checkoutPage.expectError('Error: Last Name is required');
+        await checkoutPage.form('John', 'Doe', '');
+        await checkoutPage.expectError('Error: Postal Code is required');
     });
 
-    test('cancel checkout flow works first step', async ({ loginPage, inventoryPage, cartPage }) => {
+    test('cancel checkout flow works first step', async ({ loginPage, inventoryPage, cartPage, checkoutPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await goToCheckoutStepOne({cartPage});
-        await cartPage.page.locator('[data-test="cancel"]').click();
-        await expect(cartPage.page).toHaveURL(/cart.html/);
+        await goToCheckoutStepOne({checkoutPage});
+        await checkoutPage.cancelButton.click();
+        await expect(checkoutPage.page).toHaveURL(/cart.html/);
     });
 
-    test('cancel checkout flow works second step', async ({ loginPage, inventoryPage, cartPage }) => {
+    test('cancel checkout flow works second step', async ({ loginPage, inventoryPage, cartPage, checkoutPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await goToCheckoutStepOne({cartPage});
-        await cartPage.form('John', 'Doe', '12345');
-        await goToCheckoutStepTwo({cartPage});
-        await cartPage.page.locator('[data-test="cancel"]').click();
-        await expect(cartPage.page).toHaveURL(/inventory.html/);
+        await goToCheckoutStepOne({checkoutPage});
+        await checkoutPage.form('John', 'Doe', '12345');
+        await goToCheckoutStepTwo({checkoutPage});
+        await checkoutPage.cancelButton.click();
+        await expect(checkoutPage.page).toHaveURL(/inventory.html/);
     });
 
-    test('summary validation', async ({ loginPage, inventoryPage, cartPage }) => {
+    test('summary validation', async ({ loginPage, inventoryPage, cartPage, checkoutPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await goToCheckoutStepOne({cartPage});
-        await cartPage.form('John', 'Doe', '12345');
-        await goToCheckoutStepTwo({cartPage});
-        const itemTotal = await cartPage.page.locator('[data-test="subtotal-label"]').textContent();
-        const tax = await cartPage.page.locator('[data-test="tax-label"]').textContent();
-        const total = await cartPage.page.locator('[data-test="total-label"]').textContent();
+        await goToCheckoutStepOne({checkoutPage});
+        await checkoutPage.form('John', 'Doe', '12345');
+        await goToCheckoutStepTwo({checkoutPage});
+        const itemTotal = await checkoutPage.subtotal.textContent();
+        const tax = await checkoutPage.tax.textContent();
+        const total = await checkoutPage.total.textContent();
         const itemTotalValue = parseFloat(itemTotal?.replace('Item total: $', '') || '0');
         const taxValue = parseFloat(tax?.replace('Tax: $', '') || '0');
         const totalValue = parseFloat(total?.replace('Total: $', '') || '0');
         expect(totalValue).toBeCloseTo(itemTotalValue + taxValue, 2);
     });
 
-    test('last step validation', async ({ loginPage, inventoryPage, cartPage }) => {
+    test('last step validation', async ({ loginPage, inventoryPage, cartPage, checkoutPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await goToCheckoutStepOne({cartPage});
-        await cartPage.form('John', 'Doe', '12345');
-        await goToCheckoutStepTwo({cartPage});
-        await goToCheckoutComplete({cartPage});
-        await expect(cartPage.page.locator('[data-test="pony-express"]')).toBeVisible();
-        await expect(cartPage.page.locator('[data-test=complete-header]')).toHaveText('Thank you for your order!');
-        await expect(cartPage.page.locator('[data-test="complete-text"]')).toContainText('Your order has been dispatched, and will arrive just as fast as the pony can get there!');
-        await expect(cartPage.page.locator('[data-test="back-to-products"]')).toBeVisible();
-        await expect(cartPage.page.locator('[data-test="generate-pdf-order"]')).toBeVisible();
+        await goToCheckoutStepOne({checkoutPage});
+        await checkoutPage.form('John', 'Doe', '12345');
+        await goToCheckoutStepTwo({checkoutPage});
+        await goToCheckoutComplete({checkoutPage});
+        await expect(checkoutPage.tick).toBeVisible();
+        await expect(checkoutPage.completeHeader).toHaveText('Thank you for your order!');
+        await expect(checkoutPage.completeText).toContainText('Your order has been dispatched, and will arrive just as fast as the pony can get there!');
+        await expect(checkoutPage.backButton).toBeVisible();
+        await expect(checkoutPage.pdf).toBeVisible();
     });
 });

@@ -3,12 +3,14 @@ import { LoginPage } from '../pages/login';
 import { MenuPage } from '../pages/menu';
 import { CartPage } from '../pages/cart';
 import { InventoryPage } from '../pages/inventory';
+import { CheckoutPage } from '../pages/checkout';
 
 type SauceDemoFixtures = {
     loginPage: LoginPage;
     menuPage: MenuPage;
     cartPage: CartPage;
     inventoryPage: InventoryPage;
+    checkoutPage: CheckoutPage;
 }
 
 export const test = base.extend<SauceDemoFixtures>({
@@ -23,6 +25,9 @@ export const test = base.extend<SauceDemoFixtures>({
     },
     inventoryPage: async ({ page }, use) => {
         await use(new InventoryPage(page));
+    },
+    checkoutPage: async ({ page }, use) => {
+        await use(new CheckoutPage(page));
     }
 });
 

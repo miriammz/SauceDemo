@@ -2,6 +2,8 @@ import { type Locator, type Page } from '@playwright/test';
 
 export class InventoryPage {
     readonly page: Page;
+    readonly container: Locator;
+    readonly activeOption: Locator;
     readonly backpackAddButton: Locator;
     readonly backpackRemoveButton: Locator;
     readonly sort: Locator;
@@ -22,6 +24,8 @@ export class InventoryPage {
 
     constructor(page: Page) {
         this.page = page;
+        this.container = page.locator('[data-test="inventory-container"]');
+        this.activeOption = page.locator('[data-test="active-option"]');
         this.backpackAddButton = page.locator('[data-test="add-to-cart-sauce-labs-backpack"]');
         this.bikeLightAddButton = page.locator('[data-test="add-to-cart-sauce-labs-bike-light"]');
         this.boltTShirtAddButton = page.locator('[data-test="add-to-cart-sauce-labs-bolt-t-shirt"]');
