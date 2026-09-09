@@ -191,4 +191,60 @@ test.describe ('SauceDemo', () => {
         const sortedProductPricesNumbers = [...productPricesNumbers].sort((a, b) => b - a);
         expect(productPricesNumbers).toEqual(sortedProductPricesNumbers);
     });
+
+    test('add items to cart', async ({ loginPage, inventoryPage, cartPage }) => {
+        await loginPage.login('standard_user', 'secret_sauce');
+        await inventoryPage.backpackAddButton.click();
+        await expect(cartPage.cartBadge).toHaveText('1');
+        await inventoryPage.fleeceJacketAddButton.click();
+        await expect(cartPage.cartBadge).toHaveText('2');
+        await expect(inventoryPage.backpackRemoveButton).toHaveText('Remove');
+        await expect(inventoryPage.fleeceJacketRemoveButton).toHaveText('Remove');
+    });
+
+    test('remove item from inventory', async ({ loginPage, inventoryPage, cartPage }) => {
+        await loginPage.login('standard_user', 'secret_sauce');
+        await expect(inventoryPage.backpackAddButton).toHaveText('Add to cart');
+        await inventoryPage.backpackAddButton.click();
+        await expect(cartPage.cartBadge).toHaveText('1');
+        await expect(inventoryPage.backpackRemoveButton).toHaveText('Remove');
+        await inventoryPage.backpackRemoveButton.click();
+        await expect(cartPage.cartBadge).not.toBeVisible();
+        await expect(inventoryPage.backpackAddButton).toHaveText('Add to cart');
+    });
+
+    test('remove item from cart with some products', async ({ loginPage, menuPage, inventoryPage, cartPage }) => {
+        await loginPage.login('standard_user', 'secret_sauce');
+        await expect(inventoryPage.backpackAddButton).toHaveText('Add to cart');
+        await inventoryPage.backpackAddButton.click();
+        await expect(inventoryPage.fleeceJacketAddButton).toHaveText('Add to cart');
+        await inventoryPage.fleeceJacketAddButton.click();
+        await expect(cartPage.cartBadge).toHaveText('2');
+        await cartPage.cartLink.click();
+        await expect(cartPage.page).toHaveURL(/cart.html/);
+        await expect(cartPage.cartItems).toHaveCount(2);
+        await inventoryPage.backpackRemoveButton.click();
+        await expect(cartPage.cartItems).toHaveCount(1);
+        await expect(cartPage.cartBadge).toHaveText('1');
+        await menuPage.menu.click();
+        await menuPage.inventory.click();
+        await expect(inventoryPage.backpackAddButton).toHaveText('Add to cart');
+        await expect(inventoryPage.fleeceJacketRemoveButton).toHaveText('Remove');
+    });
+
+    test('remove item from cart with one product', async ({ loginPage, menuPage, inventoryPage, cartPage }) => {
+        await loginPage.login('standard_user', 'secret_sauce');
+        await expect(inventoryPage.backpackAddButton).toHaveText('Add to cart');
+        await inventoryPage.backpackAddButton.click();
+        await expect(cartPage.cartBadge).toHaveText('1');
+        await cartPage.cartLink.click();
+        await expect(cartPage.page).toHaveURL(/cart.html/);
+        await expect(cartPage.cartItems).toHaveCount(1);
+        await inventoryPage.backpackRemoveButton.click();
+        await expect(cartPage.cartItems).not.toBeVisible();
+        await expect(cartPage.cartBadge).not.toBeVisible();
+        await menuPage.menu.click();
+        await menuPage.inventory.click();
+        await expect(inventoryPage.backpackAddButton).toHaveText('Add to cart');
+    });
 });

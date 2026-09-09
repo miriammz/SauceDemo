@@ -14,6 +14,11 @@ export class InventoryPage {
     readonly fleeceJacketAddButton: Locator;
     readonly onesieAddButton: Locator;
     readonly allTheThingsAddButton: Locator;
+    readonly bikeLightRemoveButton: Locator;
+    readonly boltTShirtRemoveButton: Locator;
+    readonly fleeceJacketRemoveButton: Locator;
+    readonly onesieRemoveButton: Locator;
+    readonly allTheThingsRemoveButton: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -24,6 +29,11 @@ export class InventoryPage {
         this.onesieAddButton = page.locator('[data-test="add-to-cart-sauce-labs-onesie"]');
         this.allTheThingsAddButton = page.locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]');
         this.backpackRemoveButton = page.locator('[data-test="remove-sauce-labs-backpack"]');
+        this.bikeLightRemoveButton = page.locator('[data-test="remove-sauce-labs-bike-light"]');
+        this.boltTShirtRemoveButton = page.locator('[data-test="remove-sauce-labs-bolt-t-shirt"]');
+        this.fleeceJacketRemoveButton = page.locator('[data-test="remove-sauce-labs-fleece-jacket"]');
+        this.onesieRemoveButton = page.locator('[data-test="remove-sauce-labs-onesie"]');
+        this.allTheThingsRemoveButton = page.locator('[data-test="remove-test.allthethings()-t-shirt-(red)"]');
         this.sort = page.locator('[data-test="product-sort-container"]');
         this.item = page.locator('.inventory_item');
         this.price = page.locator('.inventory_item_price');
