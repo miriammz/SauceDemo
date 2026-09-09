@@ -11,6 +11,7 @@ type SauceDemoFixtures = {
     cartPage: CartPage;
     inventoryPage: InventoryPage;
     checkoutPage: CheckoutPage;
+    loginAndAddItemsToCart: () => Promise<void>;
 }
 
 export const test = base.extend<SauceDemoFixtures>({
@@ -28,6 +29,13 @@ export const test = base.extend<SauceDemoFixtures>({
     },
     checkoutPage: async ({ page }, use) => {
         await use(new CheckoutPage(page));
+    },
+    loginAndAddItemsToCart: async ({ loginPage, inventoryPage, cartPage }, use) => {
+        await use(async () => {
+            await loginPage.login('standard_user', 'secret_sauce');
+            await inventoryPage.backpackAddButton.click();
+            await cartPage.cartLink.click();
+        });
     }
 });
 
