@@ -14,6 +14,24 @@ async function loginAndAddItemsToCart({loginPage, inventoryPage, cartPage}:
     await expect(cartPage.cartItems).toHaveCount(1);
 }
 
+async function goToCheckoutStepOne({cartPage}: {cartPage: CartPage}) {
+    await cartPage.page.locator('[data-test="checkout"]').click();
+    await expect(cartPage.page).toHaveURL(/checkout-step-one.html/);
+    await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Your Information');
+}
+
+async function goToCheckoutStepTwo({cartPage}: {cartPage: CartPage}) {
+    await cartPage.page.locator('[data-test="continue"]').click();
+    await expect(cartPage.page).toHaveURL(/checkout-step-two.html/);
+    await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Overview');
+}
+
+async function goToCheckoutComplete({cartPage}: {cartPage: CartPage}) {
+    await cartPage.page.locator('[data-test="finish"]').click();
+    await expect(cartPage.page).toHaveURL(/checkout-complete.html/);
+    await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Complete!');
+}
+
 test.describe ('SauceDemo', () => {
 
     test.beforeEach(async ({ loginPage }) => {
@@ -97,7 +115,7 @@ test.describe ('SauceDemo', () => {
         await expect(inventoryPage.page.locator('[data-test="inventory-container"]')).toBeVisible();
         await expect(inventoryPage.sort).toBeVisible();
         await expect(inventoryPage.page.locator('[data-test="active-option"]')).toHaveText('Name (A to Z)');
-});
+    });
 
     test('menu button opens menu and has all options', async ({ loginPage, menuPage }) => {
         await loginPage.login('standard_user', 'secret_sauce');
@@ -265,23 +283,15 @@ test.describe ('SauceDemo', () => {
 
     test('checkout flow works', async ({ loginPage, inventoryPage, cartPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await cartPage.page.locator('[data-test="checkout"]').click();
-        await expect(cartPage.page).toHaveURL(/checkout-step-one.html/);
-        await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Your Information');
+        await goToCheckoutStepOne({cartPage});
         await cartPage.form('John', 'Doe', '12345');
-        await cartPage.page.locator('[data-test="continue"]').click();
-        await expect(cartPage.page).toHaveURL(/checkout-step-two.html/);
-        await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Overview');
-        await cartPage.page.locator('[data-test="finish"]').click();
-        await expect(cartPage.page).toHaveURL(/checkout-complete.html/);
-        await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Complete!');
+        await goToCheckoutStepTwo({cartPage});
+        await goToCheckoutComplete({cartPage});
     });
 
     test('checkout flow fails with missing info', async ({ loginPage, inventoryPage, cartPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await cartPage.page.locator('[data-test="checkout"]').click();
-        await expect(cartPage.page).toHaveURL(/checkout-step-one.html/);
-        await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Your Information');
+        await goToCheckoutStepOne({cartPage});
         await cartPage.form('', '', '');
         await cartPage.expectError('Error: First Name is required');
         await cartPage.form('John', '', '');
@@ -292,35 +302,25 @@ test.describe ('SauceDemo', () => {
 
     test('cancel checkout flow works first step', async ({ loginPage, inventoryPage, cartPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await cartPage.page.locator('[data-test="checkout"]').click();
-        await expect(cartPage.page).toHaveURL(/checkout-step-one.html/);
-        await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Your Information');
+        await goToCheckoutStepOne({cartPage});
         await cartPage.page.locator('[data-test="cancel"]').click();
         await expect(cartPage.page).toHaveURL(/cart.html/);
     });
 
     test('cancel checkout flow works second step', async ({ loginPage, inventoryPage, cartPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await cartPage.page.locator('[data-test="checkout"]').click();
-        await expect(cartPage.page).toHaveURL(/checkout-step-one.html/);
-        await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Your Information');
+        await goToCheckoutStepOne({cartPage});
         await cartPage.form('John', 'Doe', '12345');
-        await cartPage.page.locator('[data-test="continue"]').click();
-        await expect(cartPage.page).toHaveURL(/checkout-step-two.html/);
-        await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Overview');
+        await goToCheckoutStepTwo({cartPage});
         await cartPage.page.locator('[data-test="cancel"]').click();
         await expect(cartPage.page).toHaveURL(/inventory.html/);
     });
 
     test('summary validation', async ({ loginPage, inventoryPage, cartPage }) => {
         await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
-        await cartPage.page.locator('[data-test="checkout"]').click();
-        await expect(cartPage.page).toHaveURL(/checkout-step-one.html/);
-        await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Your Information');
+        await goToCheckoutStepOne({cartPage});
         await cartPage.form('John', 'Doe', '12345');
-        await cartPage.page.locator('[data-test="continue"]').click();
-        await expect(cartPage.page).toHaveURL(/checkout-step-two.html/);
-        await expect(cartPage.page.locator('[data-test="title"]')).toHaveText('Checkout: Overview');
+        await goToCheckoutStepTwo({cartPage});
         const itemTotal = await cartPage.page.locator('[data-test="subtotal-label"]').textContent();
         const tax = await cartPage.page.locator('[data-test="tax-label"]').textContent();
         const total = await cartPage.page.locator('[data-test="total-label"]').textContent();
@@ -328,5 +328,18 @@ test.describe ('SauceDemo', () => {
         const taxValue = parseFloat(tax?.replace('Tax: $', '') || '0');
         const totalValue = parseFloat(total?.replace('Total: $', '') || '0');
         expect(totalValue).toBeCloseTo(itemTotalValue + taxValue, 2);
+    });
+
+    test('last step validation', async ({ loginPage, inventoryPage, cartPage }) => {
+        await loginAndAddItemsToCart({loginPage, inventoryPage, cartPage});
+        await goToCheckoutStepOne({cartPage});
+        await cartPage.form('John', 'Doe', '12345');
+        await goToCheckoutStepTwo({cartPage});
+        await goToCheckoutComplete({cartPage});
+        await expect(cartPage.page.locator('[data-test="pony-express"]')).toBeVisible();
+        await expect(cartPage.page.locator('[data-test=complete-header]')).toHaveText('Thank you for your order!');
+        await expect(cartPage.page.locator('[data-test="complete-text"]')).toContainText('Your order has been dispatched, and will arrive just as fast as the pony can get there!');
+        await expect(cartPage.page.locator('[data-test="back-to-products"]')).toBeVisible();
+        await expect(cartPage.page.locator('[data-test="generate-pdf-order"]')).toBeVisible();
     });
 });
