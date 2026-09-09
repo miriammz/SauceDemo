@@ -17,7 +17,7 @@ test.describe('SauceDemo Menu', () => {
     test('menu button opens menu and has all options', async ({ loginPage, menuPage }) => {
         await loginPage.login('standard_user', 'secret_sauce');
         await menuPage.menu.click();
-        await expect(menuPage.menu).toBeVisible();
+        await expect(menuPage.menuClosed).toBeVisible();
         await expect(menuPage.inventory).toBeVisible();
         await expect(menuPage.about).toBeVisible();
         await expect(menuPage.logout).toBeVisible();
